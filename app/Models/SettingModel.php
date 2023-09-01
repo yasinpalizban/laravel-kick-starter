@@ -2,7 +2,9 @@
 
 namespace App\Models;
 
-class SettingModel extends Aggregation
+use Illuminate\Database\Eloquent\Model;
+
+class SettingModel extends  Model
 {
 
     protected $table = 'setting';

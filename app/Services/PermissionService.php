@@ -6,8 +6,9 @@ namespace App\Services;
 
 
 use App\Entities\PermissionEntity;
+use App\Filters\PermissionFilter;
+use App\Http\Resources\PermissionCollection;
 use App\Libraries\MainService;
-use App\Libraries\UrlAggregation;
 use App\Models\PermissionModel;
 use Symfony\Component\HttpFoundation\Response as ResponseAlias;
 use Symfony\Component\HttpKernel\Exception\HttpException;
@@ -22,11 +23,18 @@ class PermissionService extends  MainService
     }
 
 
-    public function index(UrlAggregation $urlAggregation)
+    public function index( PermissionFilter $permissionFilter)
     {
-        $pipeLine = $urlAggregation->decodeQueryParam()->getPipeLine();
+         $select = empty ($permissionFilter->getFiled()) ? ['*'] : $permissionFilter->getFiled();
 
-       return $this->model->aggregatePagination($pipeLine);
+        $data['data'] = $this->model->select($select)->where($permissionFilter->getWhereStatement())->
+        limit($permissionFilter->getLimit())
+            ->offset($permissionFilter->getPage())
+            ->orderBy($permissionFilter->getSort(), $permissionFilter->getOrder())
+            ->get();
+        $data ['pager'] = paginationFields($permissionFilter->getLimit(), $permissionFilter->getPage(), $this->model->count());
+
+        return new PermissionCollection( $data);
 
     }
 

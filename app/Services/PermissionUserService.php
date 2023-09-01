@@ -4,59 +4,54 @@
 namespace App\Services;
 
 
-
 use App\Entities\PermissionUserEntity;
+use App\Filters\PermissionUserFilter;
 use App\Http\Resources\PermissionUserCollection;
 use App\Libraries\MainService;
-use App\Libraries\UrlAggregation;
 use App\Models\PermissionUserModel;
 use Symfony\Component\HttpFoundation\Response as ResponseAlias;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 
-class PermissionUserService extends  MainService
+class PermissionUserService extends MainService
 {
-    private  PermissionUserModel $model;
+    private PermissionUserModel $model;
 
     public function __construct()
-    {        parent::__construct();
+    {
+        parent::__construct();
         $this->model = new  PermissionUserModel();
     }
 
 
-    public function index(UrlAggregation $urlAggregation)
+    public function index(PermissionUserFilter $permissionUserFilter)
     {
 
-        $pipeLine = [
-            'select' => 'auth_users_permissions.*,
-        users.username,
-        users.first_name as firstName,
-        users.last_name as lastName,
-       auth_permissions.name as permission',
-            'join' => [
-                ['table' => 'users',
-                    'arg1' => 'users.id',
-                    'arg2' => 'auth_users_permissions.user_id',
-                    'condition' => '=',
-                    'mode' => 'left'],
-                ['table' => 'auth_permissions',
-                    'arg1' => 'auth_permissions.id',
-                    'arg2' => 'auth_users_permissions.permission_id',
-                    'condition' => '=',
-                    'mode' => 'left']
-            ]
-        ];
-
-        if($this->nestId!=0){
-            $pipeLine['where']=[['auth_users_permissions.permission_id','=',$this->nestId]];
+        if ($this->nestId != 0) {
+            $whereclause = [['auth_users_permissions.permission_id', '=', $this->nestId]];
+        } else {
+            $whereClause = $permissionUserFilter->getWhereStatement();
         }
 
-        $pipeLine = $urlAggregation->setTableName('auth_users_permissions')
-            ->decodeQueryParam()
-            ->getPipeLine($pipeLine);
+        $select = empty ($permissionUserFilter->getFiled()) ? [
+            'auth_users_permissions.*',
+            'users.username',
+            'users.first_name as firstName',
+            'users.last_name as lastName',
+            'auth_permissions.name as permission'
+        ] : $permissionUserFilter->getFiled();
 
-        $data= $this->model->aggregatePagination($pipeLine);
-        $urlAggregation->clearPipeLine();
-     return   new  PermissionUserCollection($data);
+        $data['data'] = $this->model->select($select)->where($whereClause)
+            ->leftJoin('users', 'users.id', '=', 'auth_users_permissions.user_id')
+            ->leftJoin('auth_permissions', 'auth_permissions.id', '=', 'auth_users_permissions.permission_id')
+            ->offset($permissionUserFilter->getPage())
+            ->limit($permissionUserFilter->getLimit())
+            ->orderBy('auth_users_permissions.' . $permissionUserFilter->getSort(), $permissionUserFilter->getOrder())
+            ->get();
+
+
+        $data ['pager'] = paginationFields($permissionUserFilter->getLimit(), $permissionUserFilter->getPage(), $this->model->count());
+
+        return new  PermissionUserCollection($data);
     }
 
     /**
@@ -70,20 +65,19 @@ class PermissionUserService extends  MainService
         if (is_null($id)) throw new HttpException(ResponseAlias::HTTP_CONFLICT, __('api.commons.reject'));
 
         $result = $this->model->
-            select(['auth_users_permissions.*',
-        'users.username',
-        'users.first_name as firstName',
-        'users.last_name as lastName',
-      'auth_permissions.name as permission'])->
-             leftJoin('auth_permissions','auth_permissions.id','=','auth_users_permissions.permission_id')->
-             leftJoin('users','users.id','=','auth_users_permissions.user_id')
+        select(['auth_users_permissions.*',
+            'users.username',
+            'users.first_name as firstName',
+            'users.last_name as lastName',
+            'auth_permissions.name as permission'])->
+        leftJoin('auth_permissions', 'auth_permissions.id', '=', 'auth_users_permissions.permission_id')->
+        leftJoin('users', 'users.id', '=', 'auth_users_permissions.user_id')
+            ->where('auth_users_permissions.id', $id)->get();
 
-                 ->where('auth_users_permissions.id', $id)->get();
-
-        if (is_null($result)) throw new HttpException( ResponseAlias::HTTP_NOT_FOUND,__('api.commons.exist'));
+        if (is_null($result)) throw new HttpException(ResponseAlias::HTTP_NOT_FOUND, __('api.commons.exist'));
 
         return [
-            'data' =>  new  PermissionUserCollection($result)
+            'data' => new  PermissionUserCollection($result)
         ];
 
     }
@@ -96,20 +90,19 @@ class PermissionUserService extends  MainService
 
         if (!$this->model->create($entity->getArray())) {
 
-            throw new HttpException( ResponseAlias::HTTP_BAD_REQUEST,__('Shared.api.reject'));
+            throw new HttpException(ResponseAlias::HTTP_BAD_REQUEST, __('Shared.api.reject'));
 
         }
-
 
 
     }
 
 
-    public function update($id , PermissionUserEntity $entity)
+    public function update($id, PermissionUserEntity $entity)
     {
         if (is_null($entity)) throw new HttpException(ResponseAlias::HTTP_CONFLICT, __('api.commons.reject'));
 
-        $this->model->where('id',$id)->update( $entity->getArray());
+        $this->model->where('id', $id)->update($entity->getArray());
 
     }
 
@@ -118,17 +111,18 @@ class PermissionUserService extends  MainService
      * @method : DELETE with params ID
      * @param $id
      */
-    public function delete($id )
+    public function delete($id)
     {
 
         $deleteById = $this->model->find($id);
 
-        if (is_null($deleteById)) throw new HttpException(ResponseAlias::HTTP_NOT_FOUND,__('api.commons.reject'));
+        if (is_null($deleteById)) throw new HttpException(ResponseAlias::HTTP_NOT_FOUND, __('api.commons.reject'));
 
         $this->model->destroy($id);
 
 
     }
+
     public function getInsertId()
     {
         return $this->model->latest('id')->first()->id;

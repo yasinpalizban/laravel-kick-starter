@@ -5,9 +5,9 @@ namespace App\Services;
 
 
 use App\Entities\PermissionGroupEntity;
+use App\Filters\PermissionGroupFilter;
 use App\Http\Resources\PermissionGroupCollection;
 use App\Libraries\MainService;
-use App\Libraries\UrlAggregation;
 use App\Models\PermissionGroupModel;
 use Symfony\Component\HttpFoundation\Response as ResponseAlias;
 use Symfony\Component\HttpKernel\Exception\HttpException;
@@ -24,39 +24,31 @@ class PermissionGroupService extends MainService
     }
 
 
-    public function index(UrlAggregation $urlAggregation)
+    public function index(PermissionGroupFilter $permissionGroupFilter)
     {
-        $pipeLine = ['select' => '
-        auth_groups_permissions.*,
-       auth_groups.name as group,
-       auth_permissions.name as permission',
-            'join' => [
-                ['table' => 'auth_groups',
-                    'arg1' => 'auth_groups.id',
-                    'arg2' => 'auth_groups_permissions.group_id',
-                    'condition' => '=',
-                    'mode' => 'left'],
-                ['table' => 'auth_permissions',
-                    'arg1' => 'auth_permissions.id',
-                    'arg2' => 'auth_groups_permissions.permission_id',
-                    'condition' => '=',
-                    'mode' => 'left']
-            ]
-        ];
 
-        if($this->nestId!=0){
-            $pipeLine['where']=[['auth_groups_permissions.permission_id','=',$this->nestId]];
+        if ($this->nestId != 0) {
+            $whereclause = [['auth_groups_permissions.permission_id', '=', $this->nestId]];
+        } else {
+            $whereClause = $permissionGroupFilter->getWhereStatement();
         }
 
-        $pipeLine = $urlAggregation->setTableName('auth_groups_permissions')
-            ->decodeQueryParam()
-            ->getPipeLine($pipeLine);
+        $select = empty ($permissionGroupFilter->getFiled()) ? ['auth_groups_permissions.*',
+            'auth_groups.name as group',
+            'auth_permissions.name as permission'] : $permissionGroupFilter->getFiled();
 
-        $data = $this->model->aggregatePagination($pipeLine);
+        $data['data'] = $this->model->select($select)->where($whereClause)
+            ->leftJoin('auth_groups', 'auth_groups.id', '=', 'auth_groups_permissions.group_id')
+            ->leftJoin('auth_permissions', 'auth_permissions.id', '=', 'auth_groups_permissions.permission_id')
+            ->offset($permissionGroupFilter->getPage())
+            ->limit($permissionGroupFilter->getLimit())
+            ->orderBy('auth_groups_permissions.' . $permissionGroupFilter->getSort(), $permissionGroupFilter->getOrder())
+            ->get();
 
-        $urlAggregation->clearPipeLine();
 
-        return  new PermissionGroupCollection($data);
+        $data ['pager'] = paginationFields($permissionGroupFilter->getLimit(), $permissionGroupFilter->getPage(), $this->model->count());
+
+        return new PermissionGroupCollection($data);
     }
 
     /**

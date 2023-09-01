@@ -12,9 +12,9 @@ interface HomeServiceInterface
 
 
 
-    public function views();
+
     public function settings();
-    public function advertisements();
+
 
 
 }

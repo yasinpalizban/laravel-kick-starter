@@ -3,7 +3,9 @@
 namespace App\Models;
 
 
-class UserModel extends Aggregation
+use Illuminate\Database\Eloquent\Model;
+
+class UserModel extends  Model
 {
 
     protected $table = 'users';
@@ -69,6 +71,6 @@ class UserModel extends Aggregation
     ];
     public function groupUser()
     {
-        return $this->hasOne(GroupUserModel::class);
+        return $this->hasOne(GroupUserModel::class,'user_id','id');
     }
 }

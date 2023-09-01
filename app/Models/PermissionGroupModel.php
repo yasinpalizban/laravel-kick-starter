@@ -2,7 +2,9 @@
 
 namespace App\Models;
 
-class PermissionGroupModel extends Aggregation
+use Illuminate\Database\Eloquent\Model;
+
+class PermissionGroupModel extends  Model
 {
 
     protected $table = 'auth_groups_permissions';
@@ -49,13 +51,13 @@ class PermissionGroupModel extends Aggregation
 
     public function group()
     {
-        return $this->hasMany(GroupModel::class);
+        return $this->hasMany(GroupModel::class,'id','group_id');
     }
 
 
     public function permission()
     {
-        return $this->hasMany(PermissionModel::class);
+        return $this->hasMany(PermissionModel::class,'id','permission_id');
     }
 
 

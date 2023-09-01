@@ -2,7 +2,8 @@
 
 namespace App\Http\Controllers;
 use App\Entities\PermissionUserEntity;
-use App\Libraries\UrlAggregation;
+
+use App\Filters\PermissionUserFilter;
 use App\Services\PermissionUserService;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response as ResponseAlias;
@@ -12,12 +13,10 @@ class PermissionUserController extends ApiController
 
     public function index(Request $request, PermissionUserService $permissionUserService, int $permission_id=0)
     {
-        $urlAggregation= new UrlAggregation($request);
-        $groupsPermissionEntity = new PermissionUserEntity(null);
 
-        $urlAggregation->dataMap($groupsPermissionEntity->getDataMap());
-
-        $data= $permissionUserService->setNestId($permission_id)->index($urlAggregation);
+        $permissionUserFilter = new PermissionUserFilter();
+        $permissionUserFilter->transform($request)->navigation($request);
+        $data= $permissionUserService->setNestId($permission_id)->index($permissionUserFilter);
         return Response()->json($data)->setStatusCode(ResponseAlias::HTTP_OK, __('api.commons.receive'));
     }
 

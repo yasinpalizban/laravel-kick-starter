@@ -3,33 +3,42 @@
 
 namespace App\Services;
 
-
-
 use App\Entities\GroupEntity;
+use App\Filters\GroupFilter;
+use App\Http\Resources\GroupCollection;
 use App\Libraries\MainService;
-use App\Libraries\UrlAggregation;
 use App\Models\GroupModel;
 use Symfony\Component\HttpFoundation\Response as ResponseAlias;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 
-class GroupService extends  MainService
+class GroupService extends MainService
 {
-    private  GroupModel $model;
+    private GroupModel $model;
 
     public function __construct()
-    {        parent::__construct();
+    {
+        parent::__construct();
         $this->model = new  GroupModel();
     }
 
-
-    public function index(UrlAggregation $urlAggregation)
+    public function index(GroupFilter $groupFilter)
     {
-        $pipeLine = $urlAggregation->decodeQueryParam()->getPipeLine();
 
-        return $this->model->aggregatePagination($pipeLine);
+        $select = empty ($groupFilter->getFiled()) ? ['*'] : $groupFilter->getFiled();
+
+        $data['data'] = $this->model->select($select)
+            ->where($groupFilter->getWhereStatement())->
+        limit($groupFilter->getLimit())
+            ->offset($groupFilter->getPage())
+            ->orderBy($groupFilter->getSort(), $groupFilter->getOrder())
+            ->get();
 
 
+        $data ['pager'] = paginationFields($groupFilter->getLimit(), $groupFilter->getPage(), $this->model->count());
+
+        return new GroupCollection( $data);
     }
+
 
     /**
      * show function
@@ -43,7 +52,7 @@ class GroupService extends  MainService
 
         $result = $this->model->where('id', $id)->get();
 
-        if (is_null($result)) throw new HttpException( ResponseAlias::HTTP_NOT_FOUND,__('api.commons.exist'));
+        if (is_null($result)) throw new HttpException(ResponseAlias::HTTP_NOT_FOUND, __('api.commons.exist'));
 
         return [
             'data' => $result,
@@ -59,20 +68,19 @@ class GroupService extends  MainService
 
         if (!$this->model->create($entity->getArray())) {
 
-            throw new HttpException( ResponseAlias::HTTP_BAD_REQUEST,__('Shared.api.reject'));
+            throw new HttpException(ResponseAlias::HTTP_BAD_REQUEST, __('Shared.api.reject'));
 
         }
-
 
 
     }
 
 
-    public function update($id , GroupEntity $entity)
+    public function update($id, GroupEntity $entity)
     {
         if (is_null($entity)) throw new HttpException(ResponseAlias::HTTP_CONFLICT, __('api.commons.reject'));
 
-        $this->model->where('id',$id)->update( $entity->getArray());
+        $this->model->where('id', $id)->update($entity->getArray());
 
     }
 
@@ -81,17 +89,18 @@ class GroupService extends  MainService
      * @method : DELETE with params ID
      * @param $id
      */
-    public function delete($id )
+    public function delete($id)
     {
 
         $deleteById = $this->model->find($id);
 
-        if (is_null($deleteById)) throw new HttpException(ResponseAlias::HTTP_NOT_FOUND,__('api.commons.reject'));
+        if (is_null($deleteById)) throw new HttpException(ResponseAlias::HTTP_NOT_FOUND, __('api.commons.reject'));
 
         $this->model->destroy($id);
 
 
     }
+
     public function getInsertId()
     {
         return $this->model->latest('id')->first()->id;

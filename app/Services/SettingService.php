@@ -5,10 +5,10 @@ namespace App\Services;
 
 
 use App\Entities\SettingEntity;
+use App\Filters\SettingFilter;
 use App\Http\Resources\SettingCollection;
 use App\Http\Resources\SettingResource;
 use App\Libraries\MainService;
-use App\Libraries\UrlAggregation;
 use App\Models\SettingModel;
 use Symfony\Component\HttpFoundation\Response as ResponseAlias;
 use Symfony\Component\HttpKernel\Exception\HttpException;
@@ -18,17 +18,27 @@ class SettingService extends MainService
     private SettingModel $model;
 
     public function __construct()
-    {        parent::__construct();
+    {
+        parent::__construct();
         $this->model = new  SettingModel();
     }
 
 
-    public function index(UrlAggregation $urlAggregation)
+    public function index(SettingFilter $settingFilter)
     {
+        $select = empty ($settingFilter->getFiled()) ? ['*'] : $settingFilter->getFiled();
 
-        $pipeLine = $urlAggregation->decodeQueryParam()->getPipeLine();
-        $result = $this->model->aggregatePagination($pipeLine);
-         return new SettingCollection($result);
+        $data['data'] = $this->model->select($select)
+            ->where($settingFilter->getWhereStatement())->
+            limit($settingFilter->getLimit())
+            ->offset($settingFilter->getPage())
+            ->orderBy($settingFilter->getSort(), $settingFilter->getOrder())
+            ->get();
+
+
+        $data ['pager'] = paginationFields($settingFilter->getLimit(), $settingFilter->getPage(), $this->model->count());
+
+        return new SettingCollection($data);
 
     }
 

@@ -5,14 +5,15 @@ namespace App\Services;
 
 
 use App\Entities\UserEntity;
+use App\Filters\UserFilter;
 use App\Http\Resources\UserCollection;
 use App\Libraries\MainService;
-use App\Libraries\UrlAggregation;
 use App\Models\GroupModel;
 use App\Models\GroupUserModel;
 use App\Models\UserModel;
 use Symfony\Component\HttpFoundation\Response as ResponseAlias;
 use Symfony\Component\HttpKernel\Exception\HttpException;
+
 
 class UserService extends MainService
 {
@@ -29,49 +30,50 @@ class UserService extends MainService
     }
 
 
-    public function index(UrlAggregation $urlAggregation)
+    public function index(UserFilter $userFilter)
     {
 
-        $pipeLine = [
-            'select' => '
-            users.id,
-      users.email,
-      users.username,
-      users.first_name,
-      users.last_name,
-      users.image,
-      users.gender,
-      users.birthday,
-      users.country,
-      users.city,
-      users.address,
-      users.phone,
-      users.status_message ,
-      users.status,
-      users.active ,
-      users.created_at,
-      users.updated_at,
-      users.deleted_at,
-      auth_groups.name as group'
-            ,
-            'join' => [
-                ['table' => 'auth_groups_users',
-                    'arg1' => 'auth_groups_users.group_id',
-                    'arg2' => 'auth_groups.id',
-                    'condition' => '=',
-                    'mode' => 'right'],
-                ['table' => 'users',
-                    'arg1' => 'auth_groups_users.user_id',
-                    'arg2' => 'users.id',
-                    'condition' => '=',
-                    'mode' => 'left']
-            ]
-        ];
-        $pipeLine = $urlAggregation->setTableName('users')->decodeQueryParam()->getPipeLine($pipeLine);
 
+        $select = empty ($userFilter->getFiled()) ?
+            ['users.id',
+                'users.email',
+                'users.username',
+                'users.first_name',
+                'users.last_name',
+                'users.image',
+                'users.gender',
+                'users.birthday',
+                'users.country',
+                'users.city',
+                'users.address',
+                'users.phone',
+                'users.status_message',
+                'users.status',
+                'users.active',
+                'users.created_at',
+                'users.updated_at',
+                'users.deleted_at',
+                'auth_groups.name as group'
 
-        $data = $this->groupModel->aggregatePagination($pipeLine);
-        $urlAggregation->clearPipeLine();
+            ] : $userFilter->getFiled();
+
+        $roleUser = [];
+        if ($userFilter->getForeignKey()) {
+            $roleUser = [['auth_groups.id', '=', $userFilter->getForeignKey()]];
+        }
+
+        $data['data'] = $this->groupUserModel->select($select)
+            ->where($userFilter->getWhereStatement())
+            ->where($roleUser)
+            ->leftJoin('auth_groups', 'auth_groups_users.group_id', '=', 'auth_groups.id')
+            ->leftJoin('users', 'auth_groups_users.user_id', '=', 'users.id')
+            ->limit($userFilter->getLimit())
+            ->offset($userFilter->getPage())
+            ->orderBy('users.' . $userFilter->getSort(), $userFilter->getOrder())
+            ->get();
+
+        $data ['pager'] = paginationFields($userFilter->getLimit(), $userFilter->getPage(), $this->model->count());
+
 
         return new UserCollection($data);
     }
@@ -84,12 +86,12 @@ class UserService extends MainService
      */
     public function show($id)
     {
-        if (is_null($id)) throw new HttpException(ResponseAlias::HTTP_CONFLICT, __('api.commons.reject'));
+        if (is_null($id)) throw new HttpException(ResponseAlias::HTTP_CONFLICT, __('api . commons . reject'));
 
-        //   $result = $this->model->where('id', $id)->get();
+
         $group = $this->groupModel->getGroupsForUser($id);
 
-        $result = $this->groupModel->select([
+        $result = $this->groupUserModel->select([
             'users.id',
             'users.email',
             'users.username',
@@ -109,13 +111,13 @@ class UserService extends MainService
             'users.updated_at',
             'users.deleted_at',
             'auth_groups.name as group'])
-            ->leftJoin('auth_groups_users', 'auth_groups_users.group_id', '=', 'auth_groups.id')
+            ->leftJoin('auth_groups', 'auth_groups_users.group_id', '=', 'auth_groups.id')
             ->leftJoin('users', 'auth_groups_users.user_id', '=', 'users.id')
             ->where('auth_groups.id', $group[0]->id)
             ->where('users.id', $id)->get();
 
 
-        if (is_null($result)) throw new HttpException(ResponseAlias::HTTP_NOT_FOUND, __('api.commons.exist'));
+        if (is_null($result)) throw new HttpException(ResponseAlias::HTTP_NOT_FOUND, __('api . commons . exist'));
 
         return [
             'data' => new UserCollection($result),
@@ -126,7 +128,7 @@ class UserService extends MainService
 
     public function create(UserEntity $entity)
     {
-        if (is_null($entity)) throw new HttpException(ResponseAlias::HTTP_CONFLICT, __('api.commons.reject'));
+        if (is_null($entity)) throw new HttpException(ResponseAlias::HTTP_CONFLICT, __('api . commons . reject'));
 
 
         if ($entity->email) {
@@ -134,14 +136,14 @@ class UserService extends MainService
             $findUser = UserModel::where(['email' => $entity->email])->first();
 
 
-            if (!empty($findUser)) throw new HttpException(ResponseAlias::HTTP_CONFLICT, __('auth.youAreEmail'));
+            if (!empty($findUser)) throw new HttpException(ResponseAlias::HTTP_CONFLICT, __('auth . youAreEmail'));
 
         }
 
         if ($entity->phone) {
 
             $findUser = UserModel::where(['phone' => $entity->phone])->first();
-            if (!empty($findUser)) throw new HttpException(ResponseAlias::HTTP_CONFLICT, __('auth.yourArePhone'));
+            if (!empty($findUser)) throw new HttpException(ResponseAlias::HTTP_CONFLICT, __('auth . yourArePhone'));
 
 
         }
@@ -155,7 +157,7 @@ class UserService extends MainService
 
         if (!$createUser) {
 
-            throw new HttpException(ResponseAlias::HTTP_BAD_REQUEST, __('api.commons.reject'));
+            throw new HttpException(ResponseAlias::HTTP_BAD_REQUEST, __('api . commons . reject'));
 
         }
 
@@ -167,7 +169,7 @@ class UserService extends MainService
 
     public function update($id, UserEntity $entity)
     {
-        if (is_null($entity)) throw new HttpException(ResponseAlias::HTTP_CONFLICT, __('api.commons.reject'));
+        if (is_null($entity)) throw new HttpException(ResponseAlias::HTTP_CONFLICT, __('api . commons . reject'));
 
         $useRole = $entity->groupId;
         unset($entity->groupId);
@@ -191,7 +193,7 @@ class UserService extends MainService
 
         $deleteById = $this->model->find($id);
 
-        if (is_null($deleteById)) throw new HttpException(ResponseAlias::HTTP_NOT_FOUND, __('api.commons.reject'));
+        if (is_null($deleteById)) throw new HttpException(ResponseAlias::HTTP_NOT_FOUND, __('api . commons . reject'));
 
         $this->model->destroy($id);
 

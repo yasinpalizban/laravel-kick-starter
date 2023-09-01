@@ -49,12 +49,12 @@ class GroupUserModel extends Model
 
     public function user()
     {
-        return $this->belongsTo(UserModel::class);
+        return $this->belongsTo(UserModel::class,'id','user_id');
     }
 
     public function group()
     {
-        return $this->belongsTo(GroupModel::class);
+        return $this->belongsTo(GroupModel::class,'id','group_id');
     }
 
 }

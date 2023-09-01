@@ -2,7 +2,9 @@
 
 namespace App\Models;
 
-class PermissionUserModel extends Aggregation
+use Illuminate\Database\Eloquent\Model;
+
+class PermissionUserModel extends  Model
 {
 
     protected $table = 'auth_users_permissions';
@@ -49,13 +51,13 @@ class PermissionUserModel extends Aggregation
 
     public function user()
     {
-        return $this->hasMany(UserModel::class);
+        return $this->hasMany(UserModel::class,'id','user_id');
     }
 
 
     public function permission()
     {
-        return $this->hasMany(PermissionModel::class);
+        return $this->hasMany(PermissionModel::class,'id','permission_id');
     }
 
     public function permissionsOfUser(string $userId)
@@ -73,4 +75,6 @@ class PermissionUserModel extends Aggregation
 
 
     }
+
+
 }

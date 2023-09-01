@@ -18,13 +18,14 @@ class PermissionResource  extends JsonResource
         $data = [];
         $classObjects = [
             'id' => 'id',
-            'key' => 'key',
-            'value' => 'value',
+            'name' => 'name',
+            'active' => 'active',
             'description' => 'description',
+           // 'permissionUser'=>PermissionUserResource::collection($this->whenLoaded('permissionUser'))
 
         ];
         foreach ($classObjects as $key => $value) {
-            if ($this->$value) {
+            if (isset($this->resource->$value) ) {
                 $data[$key] = $this->$value;
             }
         }

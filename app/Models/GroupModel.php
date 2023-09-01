@@ -2,7 +2,9 @@
 
 namespace App\Models;
 
-class GroupModel extends Aggregation
+use Illuminate\Database\Eloquent\Model;
+
+class GroupModel extends  Model
 {
 
     protected $table = 'auth_groups';
@@ -59,7 +61,7 @@ class GroupModel extends Aggregation
 
     public function groupUser()
     {
-        return $this->hasOne(GroupUserModel::class);
+        return $this->hasOne(GroupUserModel::class,'group_id','id');
     }
 
 

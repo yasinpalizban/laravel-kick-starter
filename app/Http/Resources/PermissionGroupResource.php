@@ -28,7 +28,7 @@ class PermissionGroupResource extends JsonResource
 
         ];
         foreach ($classObjects as $key => $value) {
-            if (!empty($this->$value)) {
+            if (isset($this->resource->$value) ) {
                 $data[$key] = $this->$value;
             }
         }

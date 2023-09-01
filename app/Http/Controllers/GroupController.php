@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 use App\Entities\GroupEntity;
-use App\Libraries\UrlAggregation;
+use App\Filters\GroupFilter;
 use App\Services\GroupService;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response as ResponseAlias;
@@ -13,10 +13,11 @@ class GroupController extends ApiController
     public function index(Request $request, GroupService $groupService)
     {
 
-        $urlAggregation= new UrlAggregation($request);
-        $groupEntity = new GroupEntity(null);
-        $urlAggregation->dataMap($groupEntity->getDataMap());
-        $data= $groupService->index($urlAggregation);
+        $groupFilter =  new GroupFilter();
+
+        $groupFilter->transform($request)->navigation($request);
+
+        $data= $groupService->index($groupFilter);
         return Response()->json($data)->setStatusCode(ResponseAlias::HTTP_OK, __('api.commons.receive'));
     }
 

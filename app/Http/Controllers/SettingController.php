@@ -1,8 +1,9 @@
 <?php
 
 namespace App\Http\Controllers;
+
 use App\Entities\SettingEntity;
-use App\Libraries\UrlAggregation;
+use App\Filters\SettingFilter;
 use App\Services\SettingService;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response as ResponseAlias;
@@ -13,19 +14,20 @@ class SettingController extends ApiController
     public function index(Request $request, SettingService $settingService)
     {
 
-        $urlAggregation= new UrlAggregation($request);
-        $settingEntity = new SettingEntity(null);
-        $urlAggregation->dataMap($settingEntity->getDataMap());
-           $data= $settingService->index($urlAggregation);
+
+        $settingFilter = new SettingFilter();
+        $settingFilter->transform($request)->navigation($request);
+        $data = $settingService->index($settingFilter);
         return Response()->json($data)->setStatusCode(ResponseAlias::HTTP_OK, __('api.commons.receive'));
     }
 
     public function show($id, SettingService $settingService)
     {
-        $data =$settingService->show($id);
+        $data = $settingService->show($id);
 
-        return  response()->json($data)->setStatusCode(ResponseAlias::HTTP_OK, __('api.commons.receive'));
+        return response()->json($data)->setStatusCode(ResponseAlias::HTTP_OK, __('api.commons.receive'));
     }
+
     public function store(Request $request, SettingService $settingService)
     {
         $rules = [
@@ -35,21 +37,20 @@ class SettingController extends ApiController
             'status' => 'required',
         ];
 
-        $fields=$request->validate($rules);
+        $fields = $request->validate($rules);
 
         $settingEntity = new SettingEntity($fields);
         $settingEntity->createdAt();
 
         $settingService->create($settingEntity);
 
-        return  response([])->setStatusCode(ResponseAlias::HTTP_CREATED, __('api.commons.save'));
+        return response([])->setStatusCode(ResponseAlias::HTTP_CREATED, __('api.commons.save'));
 
     }
 
 
     public function update(Request $request, $id, SettingService $settingService)
     {
-
 
 
         $rules = [
@@ -59,21 +60,21 @@ class SettingController extends ApiController
             'status' => 'required'
         ];
 
-        $fields=$request->validate($rules);
+        $fields = $request->validate($rules);
 
         $settingEntity = new SettingEntity($fields);
         $settingEntity->updatedAt();
 
         $settingService->update($id, $settingEntity);
 
-        return  response([])->setStatusCode(ResponseAlias::HTTP_OK, __('api.commons.update'));
+        return response([])->setStatusCode(ResponseAlias::HTTP_OK, __('api.commons.update'));
 
     }
 
-    public function destroy($id,  SettingService $settingService)
+    public function destroy($id, SettingService $settingService)
     {
         $settingService->delete($id);
-        return  response([])->setStatusCode(ResponseAlias::HTTP_OK, __('api.commons.remove'));
+        return response([])->setStatusCode(ResponseAlias::HTTP_OK, __('api.commons.remove'));
 
     }
 

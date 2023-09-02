@@ -71,6 +71,7 @@ function showError($test = 'nothing')
 
 function paginationFields($limit, $nowPage, $total)
 {
+    $nowPage = floor($nowPage/ $limit);
     $pages =ceil( $total / $limit);
 
     return [

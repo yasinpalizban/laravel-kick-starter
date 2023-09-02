@@ -59,7 +59,7 @@ class UserService extends MainService
 
         $roleUser = [];
         if ($userFilter->getForeignKey()) {
-            $roleUser = [['auth_groups.id', '=', $userFilter->getForeignKey()]];
+            $roleUser[] = ['auth_groups.id', '=', $userFilter->getForeignKey()];
         }
 
         $data['data'] = $this->groupUserModel->select($select)

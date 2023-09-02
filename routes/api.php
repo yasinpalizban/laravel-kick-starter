@@ -44,9 +44,9 @@ Route::middleware('authJwt')->apiResource('user', UserController::class);
 
 Route::middleware('authJwt')->apiResource('group', GroupController::class);
 Route::middleware('authJwt')->apiResource('permission', PermissionController::class);
-Route::middleware('authJwt')->resource('permission.permissionUser', 'PermissionUserController');
+Route::middleware('authJwt')->resource('permission.permissionUser', PermissionUserController::class);
 Route::middleware('authJwt')->apiResource('permissionUser', PermissionUserController::class);
-Route::middleware('authJwt')->resource('permission.permissionGroup', 'PermissionGroupController');
+Route::middleware('authJwt')->resource('permission.permissionGroup', PermissionGroupController::class);
 Route::middleware('authJwt')->apiResource('permissionGroup', PermissionGroupController::class);
 
 Route::prefix('auth')->group(function () {

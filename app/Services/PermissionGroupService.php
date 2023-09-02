@@ -28,7 +28,7 @@ class PermissionGroupService extends MainService
     {
 
         if ($this->nestId != 0) {
-            $whereclause = [['auth_groups_permissions.permission_id', '=', $this->nestId]];
+            $whereClause[] = ['auth_groups_permissions.permission_id', '=', $this->nestId];
         } else {
             $whereClause = $permissionGroupFilter->getWhereStatement();
         }

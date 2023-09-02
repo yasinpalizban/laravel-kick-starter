@@ -27,7 +27,7 @@ class PermissionUserService extends MainService
     {
 
         if ($this->nestId != 0) {
-            $whereclause = [['auth_users_permissions.permission_id', '=', $this->nestId]];
+            $whereClause[] = ['auth_users_permissions.permission_id', '=', $this->nestId];
         } else {
             $whereClause = $permissionUserFilter->getWhereStatement();
         }

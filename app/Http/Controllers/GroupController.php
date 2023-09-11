@@ -30,7 +30,7 @@ class GroupController extends ApiController
     public function store(Request $request, GroupService $groupService)
     {
         $rules = [
-            'name' => 'required|min:3|max:255|unique:Modules\Auth\Models\GroupModel,name',
+            'name' => 'required|min:3|max:255|unique:App\Models\GroupModel,name',
             'description' => 'required|min:3|max:255',
 
         ];
@@ -52,7 +52,7 @@ class GroupController extends ApiController
 
 
         $rules = [
-            'name' => 'nullable|min:3|max:255|unique:Modules\Auth\Models\GroupModel,name',
+            'name' => 'nullable|min:3|max:255|unique:App\Models\GroupModel,name',
             'description' => 'required|min:3|max:255',
 
         ];

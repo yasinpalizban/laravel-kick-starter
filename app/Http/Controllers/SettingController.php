@@ -31,7 +31,7 @@ class SettingController extends ApiController
     public function store(Request $request, SettingService $settingService)
     {
         $rules = [
-            'key' => 'required|min:3|max:255|unique:Modules\Common\Models\SettingModel,key',
+            'key' => 'required|min:3|max:255|unique:App\Models\SettingModel,key',
             'value' => 'required|max:255',
             'description' => 'required|min:3|max:255',
             'status' => 'required',

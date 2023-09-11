@@ -64,6 +64,10 @@ class GroupModel extends  Model
         return $this->hasOne(GroupUserModel::class,'group_id','id');
     }
 
+    public function permissionGroup(){
+        $this->hasMany(PermissionGroupModel::class,'group_id','id');
+    }
+
 
 
 }

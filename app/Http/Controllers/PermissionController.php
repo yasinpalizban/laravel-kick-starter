@@ -30,7 +30,7 @@ class PermissionController extends ApiController
         $rules = [
 
             'description' => 'required|min:3|max:255',
-            'name' => 'required|min:3|max:255|unique:Modules\Auth\Models\PermissionModel,name',
+            'name' => 'required|min:3|max:255|unique:App\Models\PermissionModel,name',
             'active'=>'required'
         ];
 
@@ -53,7 +53,7 @@ class PermissionController extends ApiController
 
         $rules = [
             'description' => 'required|min:3|max:255',
-            'name' => 'nullable|min:3|max:255|unique:Modules\Auth\Models\PermissionModel,name',
+            'name' => 'nullable|min:3|max:255|unique:App\Models\PermissionModel,name',
             'active'=>'required'
         ];
 

@@ -73,4 +73,8 @@ class UserModel extends  Model
     {
         return $this->hasOne(GroupUserModel::class,'user_id','id');
     }
+
+    public function permissionUser(){
+        $this->hasMany(PermissionUserModel::class,'user_id','id');
+    }
 }

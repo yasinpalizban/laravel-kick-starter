@@ -5,7 +5,7 @@ namespace Database\Seeders;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 
-class PermissionUserSeeder extends Seeder
+class GroupUserSeeder extends Seeder
 {
     /**
      * Run the database seeds.
@@ -15,12 +15,10 @@ class PermissionUserSeeder extends Seeder
     public function run()
     {
         DB::table('auth_groups_users')
-            ->insertBatch([[
-                'user_id' => 1,
-                'permission_id' => 2,
-                'actions' => '-get-post-put-delete'
-            ]]);
-
-
+            ->insert([
+                'id'=>1,
+                'group_id' => '1',
+                'user_id' => '1'
+            ]);
     }
 }

@@ -15,25 +15,25 @@ class GroupSeeder extends Seeder
      */
     public function run()
     {
-        DB::table('auth_groups')->insertBatch([[
+        DB::table('auth_groups')->insert([[
+            'id'=>1,
             'name' => 'admin',
             'description' => 'admin'
         ], [
+            'id'=>2,
             'name' => 'coworker',
             'description' => 'coworker'
         ], [
+            'id'=>3,
             'name' => 'blogger',
             'description' => 'blogger'
         ], [
+            'id'=>4,
             'name' => 'member',
             'description' => 'member'
         ]]);
 
-        DB::table('auth_groups_users')
-            ->insert([
-                'group_id' => '1',
-                'user_id' => '1'
-            ]);
+
 
     }
 }

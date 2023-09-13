@@ -14,7 +14,8 @@ class PermissionGroupSeeder extends Seeder
      */
     public function run()
     {
-        DB::table('auth_groups_permissions')->insertBatch([[
+        DB::table('auth_groups_permissions')->insert([[
+            'id'=>1,
             'group_id' => 1,
             'permission_id' => 1,
             'action' => '-get-post-put-delete'

@@ -6,7 +6,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-class  CreateSettingTable extends Migration
+return new class extends Migration
 {
     /**
      * Run the migrations.
@@ -16,10 +16,10 @@ class  CreateSettingTable extends Migration
     public function up()
     {
         Schema::create('setting', function (Blueprint $table) {
-            $table->id();
-            $table->string('key')->unique();
-            $table->string('value');
-            $table->string('description');
+            $table->integer('id')->unsigned()->autoIncrement();
+            $table->string('key',300)->unique();
+            $table->string('value',300);
+            $table->string('description',300);
             $table->boolean('status');
             $table->dateTime('created_at');
             $table->dateTime('updated_at');

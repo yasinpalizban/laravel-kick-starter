@@ -14,7 +14,7 @@ class SettingSeeder extends Seeder
      */
     public function run()
     {
-        SettingModel::factory()
+        SettingModel::factory(200)
             ->count(20)
             ->create();
     }

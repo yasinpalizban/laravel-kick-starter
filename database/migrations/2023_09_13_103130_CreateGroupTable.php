@@ -6,7 +6,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-class  CreatePermissionTable extends Migration
+return new class extends Migration
 {
     /**
      * Run the migrations.
@@ -15,11 +15,10 @@ class  CreatePermissionTable extends Migration
      */
     public function up()
     {
-        Schema::create('auth_permissions', function (Blueprint $table) {
-            $table->id();
-            $table->string('name');
-            $table->string('description');
-            $table->boolean('active');
+        Schema::create('auth_groups', function (Blueprint $table) {
+            $table->integer('id')->unsigned()->autoIncrement();
+            $table->string('name',300)->unique();
+            $table->string('description',300);
 
 
         });
@@ -32,7 +31,7 @@ class  CreatePermissionTable extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('uth_permissions');
+        Schema::dropIfExists('auth_groups');
     }
 }
 

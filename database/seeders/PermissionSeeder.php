@@ -14,7 +14,7 @@ class PermissionSeeder extends Seeder
      */
     public function run()
     {
-        DB::table('auth_permissions')->insertBatch([[
+        DB::table('auth_permissions')->insert([[
             'name' => 'user',
             'description' => 'manage user',
             'active'=>0

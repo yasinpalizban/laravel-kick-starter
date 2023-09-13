@@ -1,7 +1,8 @@
 <?php
 
-namespace Database\factories;
+namespace Database\Factories;
 
+use App\Models\IpActivityModel;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -9,6 +10,14 @@ use Illuminate\Database\Eloquent\Factories\Factory;
  */
 class IpActivityFactory extends Factory
 {
+
+    /**
+     * The name of the factory's corresponding model.
+     *
+     * @var string
+     */
+
+    protected $model = IpActivityModel::class;
     /**
      * Define the model's default state.
      *

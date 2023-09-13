@@ -6,7 +6,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-class  CreateIpActivityTable extends Migration
+return new class extends Migration
 {
     /**
      * Run the migrations.
@@ -16,13 +16,13 @@ class  CreateIpActivityTable extends Migration
     public function up()
     {
         Schema::create('auth_logins', function (Blueprint $table) {
-            $table->id();
-            $table->string('ip_address');
-            $table->string('login');
-            $table->string('success');
-            $table->string('user_id');
-            $table->string('type');
-            $table->string('user_agent');
+            $table->integer('id')->unsigned()->autoIncrement();
+            $table->string('ip_address',300);
+            $table->string('login',300);
+            $table->string('success',300);
+            $table->integer('user_id')->unsigned();
+           $table->string('type',300)->nullable();
+           $table->string('user_agent',300)->nullable();
             $table->dateTime('date');
 
         });

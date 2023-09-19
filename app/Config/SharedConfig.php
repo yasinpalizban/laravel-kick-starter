@@ -2,7 +2,7 @@
 
 use App\Libraries\BaseConfig;
 
-class ModuleSharedConfig extends BaseConfig
+class SharedConfig extends BaseConfig
 {
     /**
      * --------------------------------------------------------------------

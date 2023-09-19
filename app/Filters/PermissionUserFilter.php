@@ -7,8 +7,8 @@ class  PermissionUserFilter extends QueryFilter
 
     protected $safeParms = [
         'id' => ['eq','ne'],
-        'user_id' => ['eq','ne'],
-        'permission_id' => ['eq','ne'],
+        'userId' => ['eq','ne'],
+        'permissionId' => ['eq','ne'],
         'actions' => ['eq','ne','lik'],
     ];
     protected $cloumnMap=[

@@ -4,7 +4,7 @@
 
 use App\Libraries\BaseConfig;
 
-class ModuleAppConfig extends BaseConfig
+class AppConfig extends BaseConfig
 {
     /*
   *---------------------------------------------------------------

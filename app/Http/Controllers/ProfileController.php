@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Config\ModuleAppConfig;
+use App\Config\AppConfig;
 use App\Entities\UserEntity;
 use App\Services\ProfileService;
 use Illuminate\Http\Request;
@@ -25,7 +25,7 @@ class ProfileController extends ApiController
     {
         $user = json_decode($request->request->get('user'));
 
-        $customConfig = new ModuleAppConfig();
+        $customConfig = new AppConfig();
 
 
         $rules = [

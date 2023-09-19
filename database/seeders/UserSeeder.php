@@ -2,7 +2,7 @@
 
 namespace Database\Seeders;
 
-use App\Config\ModuleAuthConfig;
+use App\Config\AuthConfig;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 
@@ -16,7 +16,7 @@ class UserSeeder extends Seeder
      */
     public function run()
     {
-        $authConfig = new ModuleAuthConfig();
+        $authConfig = new AuthConfig();
         DB::table('users')->insert([
             'username' => 'admin',
             'email' => 'admin@admin.com',

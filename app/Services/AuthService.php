@@ -1,8 +1,8 @@
 <?php namespace App\Services;
 
 
-use App\Config\ModuleAuthConfig;
-use App\Config\ModuleSharedConfig;
+use App\Config\AuthConfig;
+use App\Config\SharedConfig;
 use App\Entities\AuthEntity;
 use App\Interfaces\AuthServiceInterface;
 use App\Libraries\MainService;
@@ -27,11 +27,11 @@ class AuthService extends MainService implements AuthServiceInterface
 
     private GroupModel $groupModel;
     private PermissionModel $permissionModel;
-    private ModuleAuthConfig $authConfig;
+    private AuthConfig $authConfig;
     private UserModel $userModel;
     private GroupUserModel $groupUserModel;
     private IpActivityModel $ipActivityModel;
-    private ModuleSharedConfig $sharedConfig;
+    private SharedConfig $sharedConfig;
     private Sms $sms;
     private PermissionGroupModel $permissionGroupModel;
     private PermissionUserModel $permissionUserModel;
@@ -40,12 +40,12 @@ class AuthService extends MainService implements AuthServiceInterface
     {
 
         $this->userModel = new UserModel();
-        $this->authConfig = new  ModuleAuthConfig();
+        $this->authConfig = new  AuthConfig();
         $this->groupModel = new GroupModel();
         $this->groupUserModel = new GroupUserModel();
         $this->permissionModel = new PermissionModel();
         $this->ipActivityModel = new IpActivityModel();
-        $this->sharedConfig = new ModuleSharedConfig();
+        $this->sharedConfig = new SharedConfig();
         $this->sms = new Sms($this->sharedConfig->sms['userName'],
             $this->sharedConfig->sms['password'],
             0);

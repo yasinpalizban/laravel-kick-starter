@@ -4,7 +4,7 @@
 namespace App\Services;
 
 
-use App\Config\ModuleAppConfig;
+use App\Config\AppConfig;
 use App\Config\ModuleCommonConfig;
 use App\Entities\UserEntity;
 use App\Http\Resources\ProfileResource;
@@ -49,7 +49,7 @@ class ProfileService extends MainService
         if (is_null($entity)) throw new HttpException(ResponseAlias::HTTP_CONFLICT, __('api.validation'));
         $userData = $this->model->where('id', $id)->get();
 
-        $customConfig = new ModuleAppConfig();
+        $customConfig = new AppConfig();
         if (isset($entity->image) && $userData[0]->image != $customConfig->defaultUserProfile) {
             Storage::delete($userData[0]->image);
         }

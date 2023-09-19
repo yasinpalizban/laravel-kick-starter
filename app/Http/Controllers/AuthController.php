@@ -2,8 +2,8 @@
 
 namespace App\Http\Controllers;
 
-use App\Config\ModuleAuthConfig;
-use App\Config\ModuleSharedConfig;
+use App\Config\AuthConfig;
+use App\Config\SharedConfig;
 use App\Entities\AuthEntity;
 use App\Enums\NotificationType;
 use App\Enums\RoleType;
@@ -56,7 +56,7 @@ class AuthController extends Controller implements AuthControllerInterface
         ];
 
 
-        $authConfig = new  \App\Config\ModuleAuthConfig();
+        $authConfig = new  \App\Config\AuthConfig();
         // ->setExpectedHostname($_SERVER['SERVER_NAME'])
         $recaptcha = new ReCaptcha($authConfig->captcha['secretKey']);
         $resp = $recaptcha->setExpectedAction($request->input('action'))
@@ -84,7 +84,7 @@ class AuthController extends Controller implements AuthControllerInterface
 
         $signUpUserData = $authService->signUp($authEntity);
 
-        $sharedConfig = new ModuleSharedConfig();
+        $sharedConfig = new SharedConfig();
 
         $pusher = new Pusher(
             $sharedConfig->pusher['authKey'],
@@ -135,7 +135,7 @@ class AuthController extends Controller implements AuthControllerInterface
             ->userAgent($request->userAgent())->ipAddress($request->getClientIp());
 
         $data = $authService->signIn($authEntity);
-        $authConfig = new  ModuleAuthConfig();
+        $authConfig = new  AuthConfig();
         Cookie::queue($authConfig->jwt['name'], $data['jwt']['token'], $data['jwt']['expire']);
         return response()->json($data)
             ->withCookie($authConfig->jwt['name'], $data['jwt']['token'], $data['jwt']['expire'])
@@ -148,7 +148,7 @@ class AuthController extends Controller implements AuthControllerInterface
     public function signOut(Request $request, AuthService $authService)
     {
 
-        $authConfig = new  ModuleAuthConfig();
+        $authConfig = new  AuthConfig();
         $authEntity = new AuthEntity(json_decode($request->request->get('user')));
         $authService->signOut($authEntity);
 
@@ -180,7 +180,7 @@ class AuthController extends Controller implements AuthControllerInterface
 
         $fields = $request->validate($rules);
 
-        $authConfig = new  \App\Config\ModuleAuthConfig();
+        $authConfig = new  \App\Config\AuthConfig();
         // ->setExpectedHostname($_SERVER['SERVER_NAME'])
         $recaptcha = new ReCaptcha($authConfig->captcha['secretKey']);
         $resp = $recaptcha->setExpectedAction($request->input('action'))

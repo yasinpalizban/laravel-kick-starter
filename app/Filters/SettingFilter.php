@@ -11,9 +11,9 @@ class  SettingFilter extends QueryFilter
         'value' => ['eq', 'ne','lik'],
         'description' => ['eq', 'ne','lik'],
         'status' => ['eq', 'ne'],
-        'created_at' => ['eq', 'ne', 'gte', 'gt', 'lte', 'lt'],
-        'updated_at' => ['eq', 'ne', 'gte', 'gt', 'lte', 'lt'],
-        'deleted_at' => ['eq', 'ne', 'gte', 'gt', 'lte', 'lt'],
+        'createdAt' => ['eq', 'ne', 'gte', 'gt', 'lte', 'lt'],
+        'updatedAt' => ['eq', 'ne', 'gte', 'gt', 'lte', 'lt'],
+        'deletedAt' => ['eq', 'ne', 'gte', 'gt', 'lte', 'lt'],
     ];
 
     protected $cloumnMap = [

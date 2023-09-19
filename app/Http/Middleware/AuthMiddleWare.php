@@ -2,7 +2,7 @@
 
 namespace App\Http\Middleware;
 
-use App\Config\ModuleAuthConfig;
+use App\Config\AuthConfig;
 use App\Enums\FilterErrorType;
 use App\Models\GroupModel;
 use App\Models\GroupUserModel;
@@ -34,7 +34,7 @@ class AuthMiddleWare
         $groupModel = new GroupModel();
         $userModel = new UserModel();
 
-        $authConfig = new  ModuleAuthConfig();
+        $authConfig = new  AuthConfig();
 
 
         $controllerName =  routeController($request->getRequestUri());

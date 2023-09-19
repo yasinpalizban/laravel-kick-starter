@@ -3,7 +3,7 @@
 
 use App\Libraries\BaseConfig;
 
-class ModuleAuthConfig extends BaseConfig
+class AuthConfig extends BaseConfig
 {
     /**
      * --------------------------------------------------------------------

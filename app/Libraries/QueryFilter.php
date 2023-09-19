@@ -129,8 +129,14 @@ class  QueryFilter implements QueryFilterInterface
     }
 
     public
-    function getWhereStatement(): array
+    function getWhereStatement(string $table = ''): array
     {
+
+        if (!is_null($table)) {
+            for ($i = 0; $i < count($this->whereStatement); $i++) {
+                $this->whereStatement[$i][0] = $table . '.' . $this->whereStatement[$i][0];
+            }
+        }
         return $this->whereStatement;
     }
 }

@@ -2,7 +2,7 @@
 
 namespace App\Http\Middleware;
 
-use App\Config\ModuleAuthConfig;
+use App\Config\AuthConfig;
 use App\Models\UserModel;
 use Closure;
 use Symfony\Component\HttpFoundation\Response as ResponseAlias;
@@ -20,7 +20,7 @@ class IsSignInMiddleWare
     public function handle($request, Closure $next)
     {
 
-        $authConfig = new  ModuleAuthConfig();
+        $authConfig = new  AuthConfig();
 
         $authorization = $request->Server('AUTHORIZATION') ? getJWTHeader($request->Server('AUTHORIZATION')) : $request->Cookie($authConfig->jwt['name']);
         $userModel = new UserModel();

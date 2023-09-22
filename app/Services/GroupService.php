@@ -6,6 +6,7 @@ namespace App\Services;
 use App\Entities\GroupEntity;
 use App\Filters\GroupFilter;
 use App\Http\Resources\GroupCollection;
+use App\Http\Resources\GroupResource;
 use App\Libraries\MainService;
 use App\Models\GroupModel;
 use Symfony\Component\HttpFoundation\Response as ResponseAlias;
@@ -50,7 +51,7 @@ class GroupService extends MainService
     {
         if (is_null($id)) throw new HttpException(ResponseAlias::HTTP_CONFLICT, __('api.commons.reject'));
 
-        $result = $this->model->where('id', $id)->get();
+        $result = new GroupResource($this->model->findOrFail($id));
 
         if (is_null($result)) throw new HttpException(ResponseAlias::HTTP_NOT_FOUND, __('api.commons.exist'));
 

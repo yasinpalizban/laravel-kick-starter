@@ -7,6 +7,7 @@ namespace App\Services;
 use App\Entities\PermissionGroupEntity;
 use App\Filters\PermissionGroupFilter;
 use App\Http\Resources\PermissionGroupCollection;
+use App\Http\Resources\PermissionGroupResource;
 use App\Libraries\MainService;
 use App\Models\PermissionGroupModel;
 use Symfony\Component\HttpFoundation\Response as ResponseAlias;
@@ -74,7 +75,7 @@ class PermissionGroupService extends MainService
         if (is_null($result)) throw new HttpException(ResponseAlias::HTTP_NOT_FOUND, __('api.commons.exist'));
 
         return [
-            'data' => new PermissionGroupCollection($result)
+            'data' => new PermissionGroupResource($result[0])
         ];
 
     }

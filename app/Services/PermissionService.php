@@ -8,6 +8,7 @@ namespace App\Services;
 use App\Entities\PermissionEntity;
 use App\Filters\PermissionFilter;
 use App\Http\Resources\PermissionCollection;
+use App\Http\Resources\PermissionResource;
 use App\Libraries\MainService;
 use App\Models\PermissionModel;
 use Symfony\Component\HttpFoundation\Response as ResponseAlias;
@@ -48,7 +49,7 @@ class PermissionService extends  MainService
     {
         if (is_null($id)) throw new HttpException(ResponseAlias::HTTP_CONFLICT, __('api.commons.reject'));
 
-        $result = $this->model->where('id', $id)->get();
+        $result =  new  PermissionResource( $this->model->findOrFail($id));
 
         if (is_null($result)) throw new HttpException( ResponseAlias::HTTP_NOT_FOUND,__('api.commons.exist'));
 

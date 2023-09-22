@@ -57,7 +57,7 @@ class SettingService extends MainService
         if (is_null($result)) throw new HttpException(ResponseAlias::HTTP_NOT_FOUND, __('api.commons.exist'));
 
         return [
-            'data' => [$result],
+            'data' => $result,
         ];
 
     }

@@ -7,6 +7,7 @@ namespace App\Services;
 use App\Entities\UserEntity;
 use App\Filters\UserFilter;
 use App\Http\Resources\UserCollection;
+use App\Http\Resources\UserResource;
 use App\Libraries\MainService;
 use App\Models\GroupModel;
 use App\Models\GroupUserModel;
@@ -119,8 +120,9 @@ class UserService extends MainService
 
         if (is_null($result)) throw new HttpException(ResponseAlias::HTTP_NOT_FOUND, __('api . commons . exist'));
 
+
         return [
-            'data' => new UserCollection($result),
+            'data' => new UserResource($result[0]),
         ];
 
     }

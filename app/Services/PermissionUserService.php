@@ -7,6 +7,7 @@ namespace App\Services;
 use App\Entities\PermissionUserEntity;
 use App\Filters\PermissionUserFilter;
 use App\Http\Resources\PermissionUserCollection;
+use App\Http\Resources\PermissionUserResource;
 use App\Libraries\MainService;
 use App\Models\PermissionUserModel;
 use Symfony\Component\HttpFoundation\Response as ResponseAlias;
@@ -75,9 +76,10 @@ class PermissionUserService extends MainService
             ->where('auth_users_permissions.id', $id)->get();
 
         if (is_null($result)) throw new HttpException(ResponseAlias::HTTP_NOT_FOUND, __('api.commons.exist'));
-
+       // $this->model->findOrFail($id)
+        $result = new PermissionUserResource($result[0]);
         return [
-            'data' => new  PermissionUserCollection($result)
+            'data' => $result
         ];
 
     }

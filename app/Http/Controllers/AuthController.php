@@ -137,7 +137,7 @@ class AuthController extends Controller implements AuthControllerInterface
         $data = $authService->signIn($authEntity);
         $authConfig = new  AuthConfig();
         Cookie::queue($authConfig->jwt['name'], $data['jwt']['token'], $data['jwt']['expire']);
-        return response()->json($data)
+        return response()->json(['data'=>$data])
             ->withCookie($authConfig->jwt['name'], $data['jwt']['token'], $data['jwt']['expire'])
             ->withHeaders([$authConfig->jwt['name'], $data['jwt']['token']])
             ->setStatusCode(ResponseAlias::HTTP_OK, __('auth.singIn'));

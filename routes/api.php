@@ -59,7 +59,7 @@ Route::prefix('auth')->group(function () {
 
     Route::middleware('isSignIn')->post('/signup', [AuthController::class, 'signUp']);
 
-    Route::middleware('authJwt')->get('/is-signin', [AuthController::class, 'isSignIn']);
+    Route::middleware('authJwt')->post('/refresh', [AuthController::class, 'refresh']);
 
     Route::middleware('isSignIn')->post('/forgot', [AuthController::class, 'forgot']);
 

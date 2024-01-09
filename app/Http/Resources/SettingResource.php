@@ -17,29 +17,17 @@ class SettingResource extends JsonResource
     public function toArray($request)
     {
 
-
-
-
-
-        $data = [];
-        $classObjects = [
-            'id' => 'id',
-            'key' => 'key',
-            'value' => 'value',
-            'status' => 'status',
-            'description' => 'description',
-            'createdAt' => 'created_at',
-            'updatedAt' => 'updated_at',
-            'deletedAt' => 'deleted_at'
+        return [
+            'id' => $this->id,
+            'key' => $this->key,
+            'value' => $this->value,
+            'status' => $this->status,
+            'description' => $this->description,
+            'createdAt' => $this->created_at,
+            'updatedAt' => $this->updated_at,
+            'deletedAt' => $this->deleted_at
 
         ];
-        foreach ($classObjects as $key => $value) {
-            if (isset($this->resource->$value) ) {
-                $data[$key] = $this->resource->$value;
-            }
-        }
-
-        return $data;
 ////return parent::toArray($request);
     }
 }

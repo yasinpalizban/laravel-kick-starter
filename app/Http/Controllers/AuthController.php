@@ -137,7 +137,7 @@ class AuthController extends Controller implements AuthControllerInterface
         $data = $authService->signIn($authEntity);
         $authConfig = new  AuthConfig();
         Cookie::queue($authConfig->jwt['name'], $data['jwt']['token'], $data['jwt']['expire']);
-        return response()->json(['data'=>$data])
+        return response()->json(['data' => $data])
             ->withCookie($authConfig->jwt['name'], $data['jwt']['token'], $data['jwt']['expire'])
             ->withHeaders([$authConfig->jwt['name'], $data['jwt']['token']])
             ->setStatusCode(ResponseAlias::HTTP_OK, __('auth.singIn'));
@@ -154,17 +154,24 @@ class AuthController extends Controller implements AuthControllerInterface
 
         return response()->json([])
             ->withCookie($authConfig->jwt['name'], null, 0)
-            ->withHeaders([$authConfig->jwt['name'],null])
+            ->withHeaders([$authConfig->jwt['name'], null])
             ->setStatusCode(ResponseAlias::HTTP_OK, __('auth.singOut'));
 
     }
 
 
-    public function isSignIn(Request $request)
+    public function refresh(Request $request, AuthService $authService)
     {
 
-        return response()->json(['success' => true])
-            ->setStatusCode(ResponseAlias::HTTP_OK, 'check is sign in');
+        $authConfig = new  AuthConfig();
+        $authEntity = new AuthEntity(json_decode($request->request->get('user')));
+        $data = $authService->refresh($authEntity);
+
+        Cookie::queue($authConfig->jwt['name'], $data['jwt']['token'], $data['jwt']['expire']);
+        return response()->json(['data' => $data])
+            ->withCookie($authConfig->jwt['name'], $data['jwt']['token'], $data['jwt']['expire'])
+            ->withHeaders([$authConfig->jwt['name'], $data['jwt']['token']])
+            ->setStatusCode(ResponseAlias::HTTP_OK, __('auth.singIn'));
 
     }
 

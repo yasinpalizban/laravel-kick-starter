@@ -52,6 +52,7 @@ class AuthService extends MainService implements AuthServiceInterface
         $this->permissionGroupModel = new PermissionGroupModel();
         $this->permissionUserModel = new PermissionUserModel();
 
+
     }
 
     public function signUp(AuthEntity $entity): object
@@ -64,15 +65,7 @@ class AuthService extends MainService implements AuthServiceInterface
             $findUser = UserModel::where(['email' => $entity->email,
                 'username' => $entity->username])->first();
             if ($findUser) {
-                $this->ipActivityModel->create([
-                    'user_id' => 0,
-                    'ip_address' => $entity->ipAddress,
-                    'user_agent' => $entity->userAgent,
-                    'date' => date('Y-m-d H:i:s', time()),
-                    'success' => false,
-                    'type' => 'sign-up'
-
-                ]);
+                $this->storeLogAttempts(false, 'sign-up', $entity->ipAddress, $entity->userAgent, 0);
                 throw new HttpException(ResponseAlias::HTTP_CONFLICT, __('auth.youAreEmail'));
             }
             try {
@@ -88,15 +81,7 @@ class AuthService extends MainService implements AuthServiceInterface
             $findUser = UserModel::where(['phone' => $entity->phone,
                 'username' => $entity->username])->first();
             if ($findUser) {
-                $this->ipActivityModel->create([
-                    'user_id' => 0,
-                    'ip_address' => $entity->ipAddress,
-                    'user_agent' => $entity->userAgent,
-                    'date' => date('Y-m-d H:i:s', time()),
-                    'success' => false,
-                    'type' => 'sign-up'
-
-                ]);
+                $this->storeLogAttempts(false, 'sign-up', $entity->ipAddress, $entity->userAgent, 0);
                 throw new HttpException(ResponseAlias::HTTP_CONFLICT, __('auth.yourArePhone'));
             }
             $isSend = $this->sms->sendActivationCode($entity->phone, getenv('site_address'));
@@ -113,15 +98,7 @@ class AuthService extends MainService implements AuthServiceInterface
         if (!$createUser) throw new HttpException(ResponseAlias::HTTP_CONFLICT, __('api.commons.reject'));
 
 
-        $this->ipActivityModel->create([
-            'user_id' => 0,
-            'ip_address' => $entity->ipAddress,
-            'user_agent' => $entity->userAgent,
-            'date' => date('Y-m-d H:i:s', time()),
-            'success' => true,
-            'type' => 'sign-up'
-
-        ]);
+        $this->storeLogAttempts(true, 'sign-up', $entity->ipAddress, $entity->userAgent, $createUser->id);
 
 
         $group = $this->groupModel->where('name', $entity->role)->get();
@@ -141,9 +118,37 @@ class AuthService extends MainService implements AuthServiceInterface
         if (is_null($findUser)) throw new HttpException(ResponseAlias::HTTP_UNAUTHORIZED, __('auth.youAreNot'));
     }
 
+
+    public function refresh(AuthEntity $entity): array
+    {
+        if (is_null($entity)) throw new HttpException(ResponseAlias::HTTP_CONFLICT, __('api.commons.reject'));
+
+
+        $findUser = $this->userModel->where("id", $entity->id)->first();
+
+        if (is_null($findUser)) throw new HttpException(ResponseAlias::HTTP_UNAUTHORIZED, __('auth.youAreNot'));
+
+        $timeJwt = isset($entity->remember) && $entity->remember ? timeJwt(true) : timeJwt(false);
+
+        $jwtToken = generateJWT($findUser->id, $timeJwt['init'], $timeJwt['expire'], $this->authConfig->jwt['secretKey']);
+
+        $data = [
+            'success' => true,
+            'jwt' => [
+                "token" => $jwtToken,
+                "expire" => $timeJwt['expire'],
+            ],
+
+        ];
+
+
+        return $data;
+
+
+    }
+
     public function signIn(AuthEntity $entity): array
     {
-
 
         if (is_null($entity)) throw new HttpException(ResponseAlias::HTTP_CONFLICT, __('api.commons.reject'));
 
@@ -152,80 +157,39 @@ class AuthService extends MainService implements AuthServiceInterface
 
 
         if (!$findUser) {
-            $this->ipActivityModel->create([
-                'user_id' => 0,
-                'ip_address' => $entity->ipAddress,
-                'user_agent' => $entity->userAgent,
-                'date' => date('Y-m-d H:i:s', time()),
-                'success' => false,
-                'type' => 'sign-in'
-
-            ]);
+            $this->storeLogAttempts(false, 'sign-in', $entity->ipAddress, $entity->userAgent, 0);
             throw new HttpException(ResponseAlias::HTTP_CONFLICT, __('auth.accountNotExist'));
         }
 
 
         if (!Hash::check($entity->password, $findUser->password)) {
 
-            $this->ipActivityModel->create([
-                'user_id' => $findUser->id,
-                'ip_address' => $entity->ipAddress,
-                'user_agent' => $entity->userAgent,
-                'date' => date('Y-m-d H:i:s', time()),
-                'success' => false,
-                'type' => 'sign-in'
-
-            ]);
+            $this->storeLogAttempts(false, 'sign-in', $entity->ipAddress, $entity->userAgent, $findUser->id);
             throw new HttpException(ResponseAlias::HTTP_CONFLICT, __('auth.accountNotExist'));
 
         }
 
         if ($findUser->active == false) {
-            $this->ipActivityModel->create([
-                'user_id' => $findUser->id,
-                'ip_address' => $entity->ipAddress,
-                'user_agent' => $entity->userAgent,
-                'date' => date('Y-m-d H:i:s', time()),
-                'success' => false,
-                'type' => 'sign-in'
 
-            ]);
+            $this->storeLogAttempts(false, 'sign-in', $entity->ipAddress, $entity->userAgent, $findUser->id);
             throw new HttpException(ResponseAlias::HTTP_CONFLICT, __('auth.accountNotConfirm'));
 
         }
         if ($findUser->status == true) {
 
-            $this->ipActivityModel->create([
-                'user_id' => $findUser->id,
-                'ip_address' => $entity->ipAddress,
-                'user_agent' => $entity->userAgent,
-                'date' => date('Y-m-d H:i:s', time()),
-                'success' => false,
-                'type' => 'sign-in'
-
-            ]);
-
+            $this->storeLogAttempts(false, 'sign-in', $entity->ipAddress, $entity->userAgent, $findUser->id);
             throw new HttpException(ResponseAlias::HTTP_CONFLICT, __('auth.accountBan'));
 
         }
 
-
-        $this->ipActivityModel->create([
-            'user_id' => $findUser->id,
-            'ip_address' => $entity->ipAddress,
-            'user_agent' => $entity->userAgent,
-            'date' => date('Y-m-d H:i:s', time()),
-            'success' => true,
-            'type' => 'sign-in'
-
-        ]);
+        $this->storeLogAttempts(true, 'sign-in', $entity->ipAddress, $entity->userAgent, $findUser->id);
 
 
         $groupUser = $this->groupUserModel->where('user_id', $findUser->id)->get();
 
         $group = $this->groupModel->where('id', $groupUser[0]->group_id)->get();
 
-        $permissions = $this->permissionModel->where('active', '1')->get();
+        $permissions = $this->permissionModel->get();
 
         $permissionUser = $this->permissionUserModel->permissionsOfUser($findUser->id)->get();
 
@@ -285,14 +249,18 @@ class AuthService extends MainService implements AuthServiceInterface
 
         $findUser = $this->userModel->where($entity->loginType, $entity->login)->first();
 
-        if (is_null($findUser)) throw new HttpException(ResponseAlias::HTTP_UNAUTHORIZED, __('auth.youAreNotUserName'));
-
+        if (is_null($findUser)) {
+            $this->storeLogAttempts(false, 'forgot', $entity->ipAddress, $entity->userAgent, 0);
+            throw new HttpException(ResponseAlias::HTTP_UNAUTHORIZED, __('auth.youAreNotUserName'));
+        }
         $statusSms = 0;
         if (!is_null($findUser->email)) {
             try {
                 Mail::to($findUser->email)->send(new ForgotEmail($entity->resetToken, __('api.events.emailForgot')));
             } catch (\Exception $e) {
+                $this->storeLogAttempts(false, 'forgot', $entity->ipAddress, $entity->userAgent, 0);
                 throw new HttpException(ResponseAlias::HTTP_BAD_REQUEST, __('auth.emailSendErrorForgot'));
+
             }
 
         }
@@ -302,17 +270,18 @@ class AuthService extends MainService implements AuthServiceInterface
 
             $statusSms = $this->sms->sendActivationCode($findUser->phone, getenv('site_address'));
             if ($statusSms < 2000) {
+                $this->storeLogAttempts(false, 'forgot', $entity->ipAddress, $entity->userAgent, 0);
 
                 throw new HttpException(ResponseAlias::HTTP_BAD_REQUEST, __('auth.emailSendErrorForgot'));
             }
         }
 
 
-
         unset($entity->login);
         unset($entity->loginType);
         unset($entity->ipAddress);
         unset($entity->userAgent);
+        $this->storeLogAttempts(true, 'forgot', $entity->ipAddress, $entity->userAgent, $findUser->id);
 
         $this->userModel->where('id', $findUser->id)->update($entity->getArray());
 
@@ -328,13 +297,18 @@ class AuthService extends MainService implements AuthServiceInterface
         $findUser = $this->userModel->where('phone', $entity->phone)->first();;
 
 
-        if (is_null($findUser)) throw new HttpException(ResponseAlias::HTTP_CONFLICT, __('auth.yourAreNotPhone'));
+        if (is_null($findUser)) {
+            $this->storeLogAttempts(false, 'reset-password-via-sms', $entity->ipAddress, $entity->userAgent, 0);
+            throw new HttpException(ResponseAlias::HTTP_CONFLICT, __('auth.yourAreNotPhone'));
+        }
 
-
-        if (!$this->sms->isActivationCodeValid($entity->phone, $entity->resetToken)) throw new HttpException(ResponseAlias::HTTP_NOT_ACCEPTABLE, __('auth.tokenExpire'));
-
+        if (!$this->sms->isActivationCodeValid($entity->phone, $entity->resetToken)) {
+            $this->storeLogAttempts(false, 'reset-password-via-sms', $entity->ipAddress, $entity->userAgent, 0);
+            throw new HttpException(ResponseAlias::HTTP_NOT_ACCEPTABLE, __('auth.tokenExpire'));
+        }
         $entity->resetPassword()->generatePassword();
         unset($entity->phone);
+        $this->storeLogAttempts(true, 'reset-password-via-sms', $entity->ipAddress, $entity->userAgent, $findUser->id);
         $this->userModel->where('id', $findUser->id)->update($entity->getArray());
 
 
@@ -350,14 +324,20 @@ class AuthService extends MainService implements AuthServiceInterface
         $findUser = $this->userModel->where('email', $entity->email)->first();;
 
 
-        if (is_null($findUser)) throw new HttpException(ResponseAlias::HTTP_CONFLICT, __('auth.youAreNotAccount'));
-
+        if (is_null($findUser)) {
+            $this->storeLogAttempts(false, 'reset-password-via-email', $entity->ipAddress, $entity->userAgent, 0);
+            throw new HttpException(ResponseAlias::HTTP_CONFLICT, __('auth.youAreNotAccount'));
+        }
 
         $date = new DateTime($findUser->reset_expires . '');
 
-        if (!empty($findUser->reset_expires) && time() > $date->getTimestamp()) throw new HttpException(ResponseAlias::HTTP_NOT_ACCEPTABLE, __('auth.tokenExpire'));
+        if (!empty($findUser->reset_expires) && time() > $date->getTimestamp()) {
+            $this->storeLogAttempts(false, 'reset-password-via-email', $entity->ipAddress, $entity->userAgent, 0);
+            throw new HttpException(ResponseAlias::HTTP_NOT_ACCEPTABLE, __('auth.tokenExpire'));
+        }
         $entity->resetPassword()->generatePassword();
         unset($entity->email);
+        $this->storeLogAttempts(true, 'reset-password-via-email', $entity->ipAddress, $entity->userAgent, $findUser->id);
         $this->userModel->where('id', $findUser->id)->update($entity->getArray());
 
 
@@ -369,17 +349,23 @@ class AuthService extends MainService implements AuthServiceInterface
 
         $findUser = $this->userModel
             ->where(['active' => 0,
-                'active_token'=> $entity->activeToken, 'email'=> $entity->email])
+                'active_token' => $entity->activeToken, 'email' => $entity->email])
             ->first();
 
-        if (is_null($findUser)) throw new HttpException(ResponseAlias::HTTP_CONFLICT, __('auth.youAreNotUsername'));
+        if (is_null($findUser)) {
+            $this->storeLogAttempts(false, 'activate-via-email', $entity->ipAddress, $entity->userAgent, 0);
+            throw new HttpException(ResponseAlias::HTTP_CONFLICT, __('auth.youAreNotUsername'));
+        }
         $date = new DateTime($findUser->active_expires . '');
 
-        if (!empty($findUser->active_expires) && time() > $date->getTimestamp()) throw new HttpException(ResponseAlias::HTTP_NOT_ACCEPTABLE, __('auth.tokenExpire'));
-
+        if (!empty($findUser->active_expires) && time() > $date->getTimestamp()) {
+            $this->storeLogAttempts(false, 'activate-via-email', $entity->ipAddress, $entity->userAgent, 0);
+            throw new HttpException(ResponseAlias::HTTP_NOT_ACCEPTABLE, __('auth.tokenExpire'));
+        }
 
         unset($entity->email);
         unset($entity->activeToken);
+        $this->storeLogAttempts(true, 'activate-via-email', $entity->ipAddress, $entity->userAgent, $findUser->id);
         $this->userModel->where('id', $findUser->id)->update($entity->getArray());
 
 
@@ -394,17 +380,19 @@ class AuthService extends MainService implements AuthServiceInterface
             'active' => 0])
             ->first();
 
-        if (is_null($findUser)) throw new HttpException(ResponseAlias::HTTP_CONFLICT, __('uth.youAreNotEmail'));
-
+        if (is_null($findUser)) {
+            $this->storeLogAttempts(false, 'send-activate-via-email', $entity->ipAddress, $entity->userAgent, 0);
+            throw new HttpException(ResponseAlias::HTTP_CONFLICT, __('uth.youAreNotEmail'));
+        }
         try {
             Mail::to($entity->email)->send(new ActivationEmail($entity->activeToken, __('api.events.emailActivation')));
         } catch (\Exception $e) {
-
+            $this->storeLogAttempts(false, 'send-activate-via-email', $entity->ipAddress, $entity->userAgent, 0);
             throw new HttpException(ResponseAlias::HTTP_BAD_REQUEST, __('auth.emailSendErrorActivation'));
 
         }
         unset($entity->email);
-
+        $this->storeLogAttempts(true, 'send-activate-via-email', $entity->ipAddress, $entity->userAgent, $findUser->id);
         $this->userModel->where('id', $findUser->id)->update($entity->getArray());
 
 
@@ -417,16 +405,22 @@ class AuthService extends MainService implements AuthServiceInterface
         $result = $this->sms->isActivationCodeValid($entity->phone,
             $entity->activeToken);
 
-        if ($result == false) throw new HttpException(ResponseAlias::HTTP_CONFLICT, __('auth.tokenExpire'));
+        if ($result == false) {
+            $this->storeLogAttempts(false, 'activate-via-sms', $entity->ipAddress, $entity->userAgent, 0);
+            throw new HttpException(ResponseAlias::HTTP_CONFLICT, __('auth.tokenExpire'));
 
+        }
         $findUser = $this->userModel
             ->where(['phone' => $entity->phone,
                 'active' => 0])->first();
 
-        if (is_null($findUser)) throw new HttpException(ResponseAlias::HTTP_CONFLICT, __('auth.youAreNotAccount'),);
-
+        if (is_null($findUser)) {
+            $this->storeLogAttempts(false, 'activate-via-sms', $entity->ipAddress, $entity->userAgent, 0);
+            throw new HttpException(ResponseAlias::HTTP_CONFLICT, __('auth.youAreNotAccount'),);
+        }
         unset($entity->phone);
         unset($entity->activeToken);
+        $this->storeLogAttempts(true, 'activate-via-sms', $entity->ipAddress, $entity->userAgent, $findUser->id);
         $this->userModel->where('id', $findUser->id)->update($entity->getArray());
 
     }
@@ -438,13 +432,31 @@ class AuthService extends MainService implements AuthServiceInterface
         $findUser = $this->userModel
             ->where(['phone' => $entity->phone,
                 'active' => 0])->first();
-        if (is_null($findUser)) throw new HttpException(ResponseAlias::HTTP_CONFLICT, __('auth.youAreNotAccount'),);
-
+        if (is_null($findUser)) {
+            $this->storeLogAttempts(false, 'send-activate-via-sms', $entity->ipAddress, $entity->userAgent, 0);
+            throw new HttpException(ResponseAlias::HTTP_CONFLICT, __('auth.youAreNotAccount'),);
+        }
         $result = $this->sms->sendActivationCode($entity->phone, getenv('site_address'));
+        $this->storeLogAttempts(true, 'send-activate-via-sms', $entity->ipAddress, $entity->userAgent, $findUser->id);
         if ($result < 2000) throw new HttpException(ResponseAlias::HTTP_BAD_REQUEST, __('auth.smsSendFail'));
     }
 
+    private function storeLogAttempts(bool $success, string $type, string $ip, string $userAgent, int $userId = 0)
+    {
+        $authConfig = new AuthConfig();
+        $this->ipActivityModel->keepLimitOfAttempts($authConfig->logAttempt);
 
+        $this->ipActivityModel->create([
+            'success' => $success,
+            'type' => $type,
+            'ip_address' => $ip,
+            'user_agent' => $userAgent,
+            'user_id' => $userId,
+            'date' => date('Y-m-d H:i:s', time()),
+        ]);
+
+
+    }
 }
 
 

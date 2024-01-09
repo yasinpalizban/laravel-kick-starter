@@ -26,9 +26,8 @@ class SettingService extends MainService
 
     public function index(SettingFilter $settingFilter)
     {
-        $select = empty ($settingFilter->getFiled()) ? ['*'] : $settingFilter->getFiled();
 
-        $data['data'] = $this->model->select($select)
+        $data['data'] = $this->model
             ->where($settingFilter->getWhereStatement())->
             limit($settingFilter->getLimit())
             ->offset($settingFilter->getPage())
@@ -37,9 +36,7 @@ class SettingService extends MainService
 
 
         $data ['pager'] = paginationFields($settingFilter->getLimit(), $settingFilter->getPage(), $this->model->count());
-
         return new SettingCollection($data);
-
     }
 
     /**

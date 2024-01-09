@@ -25,9 +25,8 @@ class GroupService extends MainService
     public function index(GroupFilter $groupFilter)
     {
 
-        $select = empty ($groupFilter->getFiled()) ? ['*'] : $groupFilter->getFiled();
 
-        $data['data'] = $this->model->select($select)
+        $data['data'] = $this->model
             ->where($groupFilter->getWhereStatement())->
         limit($groupFilter->getLimit())
             ->offset($groupFilter->getPage())

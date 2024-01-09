@@ -17,23 +17,15 @@ class PermissionGroupResource extends JsonResource
     public function toArray($request)
     {
 
-        $data = [];
-        $classObjects = [
-            'id' => 'id',
-            'groupId' => 'group_id',
-            'permissionId' => 'permission_id',
-            'group' => 'group',
-            'permission' => 'permission',
-            'actions' => 'actions',
+        return [
+            'id' => $this->id,
+            'groupId' => $this->group_id,
+            'permissionId' => $this->permission_id,
+            'group' => $this->group,
+            'permission' => $this->permission,
+            'actions' => $this->actions,
 
         ];
-        foreach ($classObjects as $key => $value) {
-            if (isset($this->resource->$value) ) {
-                $data[$key] = $this->$value;
-            }
-        }
-
-        return $data;
 
     }
 }

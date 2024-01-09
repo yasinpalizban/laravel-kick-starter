@@ -55,9 +55,6 @@ function showIt($test = 'nothing')
 }
 
 
-
-
-
 function showError($test = 'nothing')
 {
 
@@ -68,11 +65,10 @@ function showError($test = 'nothing')
 }
 
 
-
 function paginationFields($limit, $nowPage, $total)
 {
-    $nowPage = floor($nowPage/ $limit);
-    $pages =ceil( $total / $limit);
+    $nowPage = floor($nowPage / $limit);
+    $pages = ceil($total / $limit);
 
     return [
         'hasMore' => ($pages > $nowPage),
@@ -87,6 +83,7 @@ function paginationFields($limit, $nowPage, $total)
 
 
 }
+
 function toObject($array): array
 {
     $box = array();
@@ -97,5 +94,16 @@ function toObject($array): array
     }
 
     return $box;
+
+}
+
+function fixUrlFile($path): string
+{
+    if (strlen($path) > 0) {
+        $arr = explode('/', $path);
+        $arr[0] = getenv('APP_ENV') == "local" ? 'storage' : 'storage/app/' . $arr[0];
+        return implode('/', $arr);
+    }
+    return '';
 
 }

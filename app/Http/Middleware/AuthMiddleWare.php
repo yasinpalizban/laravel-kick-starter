@@ -10,7 +10,6 @@ use App\Models\PermissionGroupModel;
 use App\Models\PermissionModel;
 use App\Models\PermissionUserModel;
 use App\Models\UserModel;
-use App\Services\RoleRouteService;
 use Closure;
 use Symfony\Component\HttpFoundation\Response as ResponseAlias;
 
@@ -26,25 +25,21 @@ class AuthMiddleWare
     public function handle($request, Closure $next)
     {
 
-        $roleRoute = new RoleRouteService();
+
         $groupsUsersModel = new GroupUserModel();
         $permissionGroupModel = new PermissionGroupModel();
         $permissionUserModel = new PermissionUserModel();
         $permissionModel = new PermissionModel();
         $groupModel = new GroupModel();
         $userModel = new UserModel();
-
         $authConfig = new  AuthConfig();
-
-
-        $controllerName =  routeController($request->getRequestUri());
+        $controllerName = routeController( $request->getPathInfo());
 
 
         try {
             $authorization = $request->Server('HTTP_AUTHORIZATION') ? getJWTHeader($request->Server('HTTP_AUTHORIZATION')) : $request->Cookie($authConfig->jwt['name']);
 
-
-            if (is_null($authorization) ) {
+            if (is_null($authorization)) {
                 return response()->json([
                     'type' => FilterErrorType::Login,
                     'error' => __('middleWear.authToken')])
@@ -53,8 +48,7 @@ class AuthMiddleWare
 
             $jwtUser = validateJWT($authorization, $authConfig->jwt['secretKey']);
 
-
-            $findUser = $userModel->where('id',  $jwtUser->userId)->first();
+            $findUser = $userModel->where('id', $jwtUser->userId)->first();
 
             if (is_null($findUser)) {
 
@@ -66,69 +60,38 @@ class AuthMiddleWare
             }
 
             $userGroup = $groupModel->getGroupsForUser($jwtUser->userId);
-
             $findUser->groupId = $userGroup[0]->id;
             $findUser->groupName = $userGroup[0]->name;
+            $request->request->add(['user' => $findUser]);
 
-            $request->request->add(['user'=>$findUser]);
-
-            //get permission for  controller
-            $controllerPermission = $permissionModel->where([
-                "name" => $controllerName,
-                "active" => 1
+            $permission = $permissionModel->where(["name" => $controllerName,])->first();
+            $permissionGroup = $permissionGroupModel->where([
+                "permission_id" => $permission->id,
+                "group_id" => $userGroup[0]->id
             ])->first();
 
 
-
-            // if there is not permission for controller check by roles
-            // other wise check by permission by user or group
-
-            if (empty($controllerPermission)) {
-
-
-                // Check each requested roles
-
-                $controllerRoles = $roleRoute->getRoleAccess($controllerName);
-
-                if (empty($controllerRoles)) {
+            if ($permission->active ==false) {
+                if (!empty($permissionGroup)) {
                     return $next($request);
-                }
-
-                foreach ($controllerRoles as $group) {
-
-                    if ($group== $userGroup[0]->name) {
-                        return $next($request);
-                    }
                 }
 
             } else {
 
-                // Check each requested permission
-
-                $typeMethod = strtolower( $request->getMethod());
-
-                // get group of user
-                $groupOfUser = $groupsUsersModel->where('user_id', $jwtUser->userId)
-                    ->first();
-
-                $permissionOfGroup = $permissionGroupModel->where([
-                    "permission_id" => $controllerPermission->id,
-                    "group_id" => $groupOfUser->group_id
-                ])->first();
-
-                $permissionOfUser = $permissionUserModel->where([
-                    "permission_id" => $controllerPermission->id,
-                    "user_id" => $jwtUser->userId
-                ])->first();
+                $typeMethod = strtolower($request->getMethod());
+                $permissionUser = $permissionUserModel->where([
+                    "permission_id" => $permission->id,
+                    "user_id" => $findUser->id])->
+                first();
 
 
-                if (!empty($permissionOfGroup) && strstr($permissionOfGroup->actions, $typeMethod)) {
+                if (!empty($permissionGroup) && strstr($permissionGroup->actions, $typeMethod)) {
 
                     return $next($request);
 
                 }
 
-                if (!empty($permissionOfUser) && strstr($permissionOfUser->actions, $typeMethod)) {
+                if (!empty($permissionUser) && strstr($permissionUser->actions, $typeMethod)) {
 
                     return $next($request);
                 }

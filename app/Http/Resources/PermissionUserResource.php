@@ -15,25 +15,19 @@ class PermissionUserResource  extends JsonResource
     public function toArray($request)
     {
 
-        $data = [];
-        $classObjects = [
-            'id' => 'id',
-            'userId' => 'user_id',
-            'permissionId' => 'permission_id',
-            'actions' => 'actions',
-            'permission' => 'permission',
-            'username' => 'username',
-            'firstName' => 'firstName',
-            'lastName' => 'lastName',
+
+
+        return [
+            'id' =>$this->id,
+            'userId' => $this->user_id,
+            'permissionId' => $this->permission_id,
+            'actions' => $this->actions,
+            'permission' => $this->permission,
+            'username' => $this->username,
+            'firstName' => $this->firstName,
+            'lastName' => $this->lastName,
 
         ];
-        foreach ($classObjects as $key => $value) {
-            if (isset($this->resource->$value) ) {
-                $data[$key] = $this->$value;
-            }
-        }
-
-        return $data;
 
     }
 }

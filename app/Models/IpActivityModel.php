@@ -52,4 +52,14 @@ class IpActivityModel extends Model
 
     ];
 
+    public function keepLimitOfAttempts(int $trashHold)
+    {
+
+        $countAll = $this->count();
+        if ($countAll > $trashHold) {
+            $lastId = $this->latest('id')->first()->id;
+            $targetId = $lastId - $trashHold;
+            $this->where([['id', '<=', $targetId]])->delete();
+        }
+    }
 }

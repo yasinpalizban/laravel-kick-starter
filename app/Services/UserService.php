@@ -35,35 +35,32 @@ class UserService extends MainService
     {
 
 
-        $select = empty ($userFilter->getFiled()) ?
-            ['users.id',
-                'users.email',
-                'users.username',
-                'users.first_name',
-                'users.last_name',
-                'users.image',
-                'users.gender',
-                'users.birthday',
-                'users.country',
-                'users.city',
-                'users.address',
-                'users.phone',
-                'users.status_message',
-                'users.status',
-                'users.active',
-                'users.created_at',
-                'users.updated_at',
-                'users.deleted_at',
-                'auth_groups.name as group'
-
-            ] : $userFilter->getFiled();
-
         $roleUser = [];
         if ($userFilter->getForeignKey()) {
             $roleUser[] = ['auth_groups.id', '=', $userFilter->getForeignKey()];
         }
 
-        $data['data'] = $this->groupUserModel->select($select)
+        $data['data'] = $this->groupUserModel->select(['users.id',
+            'users.email',
+            'users.username',
+            'users.first_name',
+            'users.last_name',
+            'users.image',
+            'users.gender',
+            'users.birthday',
+            'users.country',
+            'users.city',
+            'users.address',
+            'users.phone',
+            'users.status_message',
+            'users.status',
+            'users.active',
+            'users.created_at',
+            'users.updated_at',
+            'users.deleted_at',
+            'auth_groups.name as group'
+
+        ])
             ->where($userFilter->getWhereStatement())
             ->where($roleUser)
             ->leftJoin('auth_groups', 'auth_groups_users.group_id', '=', 'auth_groups.id')

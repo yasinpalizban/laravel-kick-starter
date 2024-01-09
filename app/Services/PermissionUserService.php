@@ -33,15 +33,15 @@ class PermissionUserService extends MainService
             $whereClause = $permissionUserFilter->getWhereStatement();
         }
 
-        $select = empty ($permissionUserFilter->getFiled()) ? [
+
+
+        $data['data'] = $this->model->select([
             'auth_users_permissions.*',
             'users.username',
             'users.first_name as firstName',
             'users.last_name as lastName',
             'auth_permissions.name as permission'
-        ] : $permissionUserFilter->getFiled();
-
-        $data['data'] = $this->model->select($select)->where($whereClause)
+        ])->where($whereClause)
             ->leftJoin('users', 'users.id', '=', 'auth_users_permissions.user_id')
             ->leftJoin('auth_permissions', 'auth_permissions.id', '=', 'auth_users_permissions.permission_id')
             ->offset($permissionUserFilter->getPage())

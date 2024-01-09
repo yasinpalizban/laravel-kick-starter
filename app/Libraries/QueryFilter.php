@@ -11,7 +11,6 @@ class  QueryFilter implements QueryFilterInterface
     private int $limit;
     private int $page;
     private int $foreignKey;
-    private string $filed;
     private string $order;
     private string $sort;
 
@@ -27,7 +26,6 @@ class  QueryFilter implements QueryFilterInterface
         $this->order = 'desc';
         $this->page = 1;
         $this->limit = 10;
-        $this->filed = '';
         $this->operatorMap = [
             'gt' => '>',
             'gte' => '>=',
@@ -113,20 +111,6 @@ class  QueryFilter implements QueryFilterInterface
      {
          return $this->foreignKey;
      }
-
-    public
-    function getFiled(): array
-    {
-        $select = [];
-        if ($this->filed != '') {
-            $select = str_replace("\n", '', $this->filed);
-            $select = explode(',', $select);
-            for ($i = 0; $i <= count($select) - 1; $i++) {
-                $select[$i] = trim($select[$i], " ");
-            }
-        }
-        return $select;
-    }
 
     public
     function getWhereStatement(string $table = ''): array

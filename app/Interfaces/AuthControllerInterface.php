@@ -15,10 +15,9 @@ interface AuthControllerInterface
 
     public function signIn(Request $request,AuthService $authService) ;
 
-
     public function signOut(Request $request,AuthService $authService) ;
-    public function isSignIn(Request $request) ;
 
+    public function refresh(Request $request, AuthService $authService) ;
 
     public function signUp(Request $request, AuthService $authService) ;
 

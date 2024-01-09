@@ -26,9 +26,8 @@ class PermissionService extends  MainService
 
     public function index( PermissionFilter $permissionFilter)
     {
-         $select = empty ($permissionFilter->getFiled()) ? ['*'] : $permissionFilter->getFiled();
 
-        $data['data'] = $this->model->select($select)->where($permissionFilter->getWhereStatement())->
+        $data['data'] = $this->model->where($permissionFilter->getWhereStatement())->
         limit($permissionFilter->getLimit())
             ->offset($permissionFilter->getPage())
             ->orderBy($permissionFilter->getSort(), $permissionFilter->getOrder())

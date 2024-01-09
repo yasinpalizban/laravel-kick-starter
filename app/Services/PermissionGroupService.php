@@ -34,11 +34,11 @@ class PermissionGroupService extends MainService
             $whereClause = $permissionGroupFilter->getWhereStatement();
         }
 
-        $select = empty ($permissionGroupFilter->getFiled()) ? ['auth_groups_permissions.*',
-            'auth_groups.name as group',
-            'auth_permissions.name as permission'] : $permissionGroupFilter->getFiled();
 
-        $data['data'] = $this->model->select($select)->where($whereClause)
+
+        $data['data'] = $this->model->select( ['auth_groups_permissions.*',
+            'auth_groups.name as group',
+            'auth_permissions.name as permission'])->where($whereClause)
             ->leftJoin('auth_groups', 'auth_groups.id', '=', 'auth_groups_permissions.group_id')
             ->leftJoin('auth_permissions', 'auth_permissions.id', '=', 'auth_groups_permissions.permission_id')
             ->offset($permissionGroupFilter->getPage())

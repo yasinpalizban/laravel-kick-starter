@@ -80,4 +80,10 @@ class AuthConfig extends BaseConfig
         'emailForgot' => 'Modules\Auth\Views\forgot',
         'emailActivation' => 'Modules\Auth\Views\activation',
     ];
+    /*
+    *---------------------------------------------------------------
+    *  Log Attempt Threshold
+    *---------------------------------------------------------------
+    */
+    public $logAttempt= 50;
 }
